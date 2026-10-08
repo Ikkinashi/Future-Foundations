@@ -1,3 +1,568 @@
 {
     "liveServer.settings.port": 5501
 }
+
+01. PARENT DOMAIN CLASS — INHERITANCE
+Examples: Vehicle, Product, Employee
+
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class PARENT {
+    // 1. SHARED FIELDS
+    @Id
+    protected ID_TYPE id;
+    protected TYPE1 field1;
+    protected TYPE2 field2;
+
+    // 2. CONSTRUCTORS
+    protected PARENT() {}
+    protected PARENT(Builder<?> builder) {
+        this.id = builder.id;
+        this.field1 = builder.field1;
+        this.field2 = builder.field2;
+    }
+
+    // 3. GETTERS
+    public ID_TYPE getId() { return id; }
+    public TYPE1 getField1() { return field1; }
+    public TYPE2 getField2() { return field2; }
+
+    // 4. GENERIC BUILDER
+    public static abstract class Builder<T extends Builder<T>> {
+        protected ID_TYPE id;
+        protected TYPE1 field1;
+        protected TYPE2 field2;
+
+        // 5. BUILDER SETTERS
+        public T setId(ID_TYPE id) { this.id = id; return self(); }
+        public T setField1(TYPE1 field1) { this.field1 = field1; return self(); }
+        public T setField2(TYPE2 field2) { this.field2 = field2; return self(); }
+
+        // 6. SELF
+        protected abstract T self();
+    }
+}
+
+
+02. CHILD DOMAIN CLASS — INHERITED BUILDER
+Examples: Car extends Vehicle, Laptop extends Product
+
+@Entity
+public class CHILD extends PARENT {
+    // 1. CHILD-SPECIFIC FIELDS
+    private TYPE1 childField1;
+    private TYPE2 childField2;
+
+    // 2. CONSTRUCTORS
+    protected CHILD() { super(); }
+    private CHILD(Builder builder) {
+        super(builder);
+        this.childField1 = builder.childField1;
+        this.childField2 = builder.childField2;
+    }
+
+    // 3. GETTERS
+    public TYPE1 getChildField1() { return childField1; }
+    public TYPE2 getChildField2() { return childField2; }
+
+    // 4. CHILD BUILDER
+    public static class Builder extends PARENT.Builder<Builder> {
+        private TYPE1 childField1;
+        private TYPE2 childField2;
+
+        // 5. CHILD SETTERS
+        public Builder setChildField1(TYPE1 childField1) {
+            this.childField1 = childField1;
+            return this;
+        }
+        public Builder setChildField2(TYPE2 childField2) {
+            this.childField2 = childField2;
+            return this;
+        }
+
+        // 6. SELF
+        @Override
+        protected Builder self() { return this; }
+
+        // 7. BUILD
+        public CHILD build() { return new CHILD(this); }
+    }
+}
+
+03. BASIC DOMAIN CLASS — NO INHERITANCE
+
+public class CLASSNAME {
+    // 1. FIELDS
+    private TYPE1 field1;
+    private TYPE2 field2;
+
+    // 2. CONSTRUCTORS
+    protected CLASSNAME() {}
+    private CLASSNAME(Builder builder) {
+        this.field1 = builder.field1;
+        this.field2 = builder.field2;
+    }
+
+    // 3. GETTERS
+    public TYPE1 getField1() { return field1; }
+    public TYPE2 getField2() { return field2; }
+
+    // 4. BUILDER
+    public static class Builder {
+        private TYPE1 field1;
+        private TYPE2 field2;
+
+        // 5. SETTERS
+        public Builder setField1(TYPE1 field1) {
+            this.field1 = field1;
+            return this;
+        }
+        public Builder setField2(TYPE2 field2) {
+            this.field2 = field2;
+            return this;
+        }
+
+        // 6. BUILD
+        public CLASSNAME build() { return new CLASSNAME(this); }
+    }
+}
+
+04. EMBEDDED OBJECT / COMPOSITE PRIMARY KEY
+
+@Embeddable
+public class KEYCLASS implements java.io.Serializable {
+    // 1. FIELDS
+    private TYPE1 field1;
+    private TYPE2 field2;
+
+    // 2. CONSTRUCTORS
+    protected KEYCLASS() {}
+    private KEYCLASS(Builder builder) {
+        this.field1 = builder.field1;
+        this.field2 = builder.field2;
+    }
+
+    // 3. GETTERS
+    public TYPE1 getField1() { return field1; }
+    public TYPE2 getField2() { return field2; }
+
+    // 4. BUILDER
+    public static class Builder {
+        private TYPE1 field1;
+        private TYPE2 field2;
+
+        // 5. SETTERS
+        public Builder setField1(TYPE1 field1) {
+            this.field1 = field1;
+            return this;
+        }
+        public Builder setField2(TYPE2 field2) {
+            this.field2 = field2;
+            return this;
+        }
+
+        // 6. BUILD
+        public KEYCLASS build() { return new KEYCLASS(this); }
+    }
+
+    // 7. COMPOSITE KEY EQUALITY
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof KEYCLASS)) return false;
+        KEYCLASS other = (KEYCLASS) obj;
+        return java.util.Objects.equals(field1, other.field1)
+            && java.util.Objects.equals(field2, other.field2);
+    }
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(field1, field2);
+    }
+}
+
+05. COMPOSITION / OWNER DOMAIN CLASS
+
+@Entity
+public class OWNER {
+    // 1. ID AND HAS-A FIELDS
+    @Id
+    private ID_TYPE id;
+    @Embedded
+    private VALUEOBJECT valueObject;
+    @OneToMany
+    private java.util.List<RELATED> relatedObjects = new java.util.ArrayList<>();
+
+    // 2. CONSTRUCTORS
+    protected OWNER() {}
+    private OWNER(Builder builder) {
+        this.id = builder.id;
+        this.valueObject = builder.valueObject;
+        this.relatedObjects = builder.relatedObjects;
+    }
+
+    // 3. GETTERS
+    public ID_TYPE getId() { return id; }
+    public VALUEOBJECT getValueObject() { return valueObject; }
+    public java.util.List<RELATED> getRelatedObjects() { return relatedObjects; }
+
+    // 4. BUILDER
+    public static class Builder {
+        private ID_TYPE id;
+        private VALUEOBJECT valueObject;
+        private java.util.List<RELATED> relatedObjects = new java.util.ArrayList<>();
+
+        // 5. SETTERS
+        public Builder setId(ID_TYPE id) { this.id = id; return this; }
+        public Builder setValueObject(VALUEOBJECT valueObject) {
+            this.valueObject = valueObject;
+            return this;
+        }
+        public Builder setRelatedObjects(java.util.List<RELATED> relatedObjects) {
+            this.relatedObjects = relatedObjects;
+            return this;
+        }
+
+        // 6. BUILD
+        public OWNER build() { return new OWNER(this); }
+    }
+}
+
+06. JPA RELATIONSHIPS — ALTERNATIVES, NOT ONE CLASS
+
+// 1. ONE TO ONE
+@OneToOne
+private OTHER other;
+
+// 2. ONE TO MANY
+@OneToMany
+private java.util.List<OTHER> others;
+
+// 3. MANY TO ONE
+@ManyToOne
+private OTHER other;
+
+// 4. MANY TO MANY
+@ManyToMany
+private java.util.List<OTHER> others;
+
+// 5. BIDIRECTIONAL PARENT SIDE
+@OneToMany(mappedBy = "parent")
+private java.util.List<CHILD> children;
+
+// 6. BIDIRECTIONAL CHILD SIDE
+@ManyToOne
+@JoinColumn(name = "parent_id")
+private PARENT parent;
+
+// 7. EMBEDDED NON-KEY OBJECT
+@Embedded
+private VALUEOBJECT valueObject;
+
+// 8. EMBEDDED COMPOSITE KEY
+@EmbeddedId
+private KEYCLASS key;
+
+07. HELPER — VALIDATION
+
+public class Helper {
+    // 1. STRING CHECK
+    public static boolean isNullOrEmpty(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    // 2. POSITIVE NUMBER CHECK
+    public static boolean isPositive(double value) {
+        return value > 0;
+    }
+
+    // 3. CUSTOM CHECK
+    public static boolean isValidField(TYPE value) {
+        return VALID_CONDITION;
+    }
+}
+
+THOUGHT FLOW:
+Validation rule → static boolean method → true/false → Factory calls Helper
+→ Factory decides reject or build. VALID_CONDITION must become a real boolean expression.
+
+08. FACTORY — NORMAL OR INHERITED ENTITY
+
+public class ENTITYFactory {
+    // 1. FACTORY METHOD
+    public static ENTITY createENTITY(TYPE1 field1, TYPE2 field2, TYPE3 field3) {
+        // 2. VALIDATION
+        if (INVALID_CONDITION) {
+            return null;
+        }
+
+        // 3. BUILDER
+        return new ENTITY.Builder()
+                .setField1(field1)
+                .setField2(field2)
+                .setField3(field3)
+                .build();
+    }
+}
+
+09. FACTORY — COMPOSITION
+
+public class OWNERFactory {
+    // 1. PARAMETERS
+    public static OWNER createOWNER(VALUEOBJECT valueObject,
+                                    java.util.List<RELATED> relatedObjects) {
+        // 2. VALIDATION
+        if (valueObject == null || relatedObjects == null) {
+            return null;
+        }
+
+        // 3. BUILDER
+        return new OWNER.Builder()
+                .setValueObject(valueObject)
+                .setRelatedObjects(relatedObjects)
+                .build();
+    }
+}
+
+10. FACTORY TEST — JUNIT 5
+
+class ENTITYFactoryTest {
+    // 1. VALID TEST
+    @Test
+    void testCreate() {
+        ENTITY entity = ENTITYFactory.createENTITY(
+                VALID_VALUE1, VALID_VALUE2, VALID_VALUE3
+        );
+        assertNotNull(entity);
+        assertEquals(EXPECTED_VALUE, entity.getField1());
+    }
+
+    // 2. INVALID TEST
+    @Test
+    void testInvalid() {
+        ENTITY entity = ENTITYFactory.createENTITY(
+                INVALID_VALUE1, VALID_VALUE2, VALID_VALUE3
+        );
+        assertNull(entity);
+    }
+}
+
+11. REPOSITORY — JPA AND CUSTOM QUERIES
+
+@Repository
+public interface ENTITYRepository extends JpaRepository<ENTITY, ID_TYPE> {
+    // 1. SINGLE FIELD
+    java.util.List<ENTITY> findByField1(TYPE1 field1);
+
+    // 2. MULTIPLE FIELDS
+    java.util.List<ENTITY> findByField1AndField2(TYPE1 field1, TYPE2 field2);
+
+    // 3. RELATED OBJECT FIELD
+    java.util.List<ENTITY> findByRelated_Field1(TYPE1 field1);
+}
+
+12. SERVICE INTERFACE
+
+public interface IENTITYService {
+    // 1. CREATE
+    ENTITY create(ENTITY entity);
+
+    // 2. READ
+    ENTITY read(ID_TYPE id);
+
+    // 3. UPDATE
+    ENTITY update(ENTITY entity);
+
+    // 4. DELETE
+    boolean delete(ID_TYPE id);
+
+    // 5. GET ALL
+    java.util.List<ENTITY> getAll();
+}
+
+13. SERVICE IMPLEMENTATION
+
+@Service
+public class ENTITYService implements IENTITYService {
+    // 1. REPOSITORY
+    private final ENTITYRepository repository;
+
+    // 2. CONSTRUCTOR
+    public ENTITYService(ENTITYRepository repository) {
+        this.repository = repository;
+    }
+
+    // 3. CREATE
+    @Override
+    public ENTITY create(ENTITY entity) {
+        return repository.save(entity);
+    }
+
+    // 4. READ
+    @Override
+    public ENTITY read(ID_TYPE id) {
+        return repository.findById(id).orElse(null);
+    }
+
+    // 5. UPDATE
+    @Override
+    public ENTITY update(ENTITY entity) {
+        return repository.save(entity);
+    }
+
+    // 6. DELETE
+    @Override
+    public boolean delete(ID_TYPE id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    // 7. GET ALL
+    @Override
+    public java.util.List<ENTITY> getAll() {
+        return repository.findAll();
+    }
+}
+
+14. SERVICE TEST — INTEGRATION STYLE
+
+@SpringBootTest
+@Transactional
+class ENTITYServiceTest {
+    // 1. INJECT SERVICE
+    @Autowired
+    private ENTITYService service;
+
+    // 2. CREATE TEST
+    @Test
+    void testCreate() {
+        ENTITY entity = ENTITYFactory.createENTITY(
+                VALID_VALUE1, VALID_VALUE2, VALID_VALUE3
+        );
+        ENTITY saved = service.create(entity);
+        assertNotNull(saved);
+    }
+
+    // 3. READ TEST
+    @Test
+    void testRead() {
+        ENTITY entity = ENTITYFactory.createENTITY(
+                VALID_VALUE1, VALID_VALUE2, VALID_VALUE3
+        );
+        ENTITY saved = service.create(entity);
+        ENTITY found = service.read(saved.getId());
+        assertNotNull(found);
+    }
+
+    // 4. DELETE TEST
+    @Test
+    void testDelete() {
+        ENTITY entity = ENTITYFactory.createENTITY(
+                VALID_VALUE1, VALID_VALUE2, VALID_VALUE3
+        );
+        ENTITY saved = service.create(entity);
+        boolean deleted = service.delete(saved.getId());
+        assertTrue(deleted);
+    }
+}
+
+15. CONTROLLER — HTTP ENDPOINTS
+
+@RestController
+@RequestMapping("/entity")
+public class ENTITYController {
+    // 1. SERVICE
+    private final ENTITYService service;
+
+    // 2. CONSTRUCTOR
+    public ENTITYController(ENTITYService service) {
+        this.service = service;
+    }
+
+    // 3. CREATE
+    @PostMapping("/create")
+    public ENTITY create(@RequestBody ENTITY entity) {
+        return service.create(entity);
+    }
+
+    // 4. READ
+    @GetMapping("/read/{id}")
+    public ENTITY read(@PathVariable ID_TYPE id) {
+        return service.read(id);
+    }
+
+    // 5. UPDATE
+    @PutMapping("/update")
+    public ENTITY update(@RequestBody ENTITY entity) {
+        return service.update(entity);
+    }
+
+    // 6. DELETE
+    @DeleteMapping("/delete/{id}")
+    public boolean delete(@PathVariable ID_TYPE id) {
+        return service.delete(id);
+    }
+
+    // 7. GET ALL
+    @GetMapping("/all")
+    public java.util.List<ENTITY> getAll() {
+        return service.getAll();
+    }
+}
+
+16. CONTROLLER TEST — MOCKMVC
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class ENTITYControllerTest {
+    // 1. MOCKMVC
+    @Autowired
+    private MockMvc mockMvc;
+
+    // 2. GET ALL TEST
+    @Test
+    void testGetAll() throws Exception {
+        mockMvc.perform(get("/entity/all"))
+                .andExpect(status().isOk());
+    }
+
+    // 3. READ TEST
+    @Test
+    void testRead() throws Exception {
+        mockMvc.perform(get("/entity/read/{id}", VALID_ID))
+                .andExpect(status().isOk());
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
