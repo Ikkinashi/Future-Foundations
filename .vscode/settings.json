@@ -3,18 +3,15 @@
 }
 
 01. PARENT DOMAIN CLASS — INHERITANCE
-Examples: Vehicle, Product, Employee
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class PARENT {
-    // 1. SHARED FIELDS
     @Id
     protected ID_TYPE id;
     protected TYPE1 field1;
     protected TYPE2 field2;
 
-    // 2. CONSTRUCTORS
     protected PARENT() {}
     protected PARENT(Builder<?> builder) {
         this.id = builder.id;
@@ -22,38 +19,31 @@ public abstract class PARENT {
         this.field2 = builder.field2;
     }
 
-    // 3. GETTERS
     public ID_TYPE getId() { return id; }
     public TYPE1 getField1() { return field1; }
     public TYPE2 getField2() { return field2; }
 
-    // 4. GENERIC BUILDER
     public static abstract class Builder<T extends Builder<T>> {
         protected ID_TYPE id;
         protected TYPE1 field1;
         protected TYPE2 field2;
 
-        // 5. BUILDER SETTERS
         public T setId(ID_TYPE id) { this.id = id; return self(); }
         public T setField1(TYPE1 field1) { this.field1 = field1; return self(); }
         public T setField2(TYPE2 field2) { this.field2 = field2; return self(); }
 
-        // 6. SELF
         protected abstract T self();
     }
 }
 
 
 02. CHILD DOMAIN CLASS — INHERITED BUILDER
-Examples: Car extends Vehicle, Laptop extends Product
 
 @Entity
 public class CHILD extends PARENT {
-    // 1. CHILD-SPECIFIC FIELDS
     private TYPE1 childField1;
     private TYPE2 childField2;
 
-    // 2. CONSTRUCTORS
     protected CHILD() { super(); }
     private CHILD(Builder builder) {
         super(builder);
@@ -61,16 +51,13 @@ public class CHILD extends PARENT {
         this.childField2 = builder.childField2;
     }
 
-    // 3. GETTERS
     public TYPE1 getChildField1() { return childField1; }
     public TYPE2 getChildField2() { return childField2; }
 
-    // 4. CHILD BUILDER
     public static class Builder extends PARENT.Builder<Builder> {
         private TYPE1 childField1;
         private TYPE2 childField2;
 
-        // 5. CHILD SETTERS
         public Builder setChildField1(TYPE1 childField1) {
             this.childField1 = childField1;
             return this;
@@ -80,11 +67,9 @@ public class CHILD extends PARENT {
             return this;
         }
 
-        // 6. SELF
         @Override
         protected Builder self() { return this; }
 
-        // 7. BUILD
         public CHILD build() { return new CHILD(this); }
     }
 }
@@ -92,27 +77,22 @@ public class CHILD extends PARENT {
 03. BASIC DOMAIN CLASS — NO INHERITANCE
 
 public class CLASSNAME {
-    // 1. FIELDS
     private TYPE1 field1;
     private TYPE2 field2;
 
-    // 2. CONSTRUCTORS
     protected CLASSNAME() {}
     private CLASSNAME(Builder builder) {
         this.field1 = builder.field1;
         this.field2 = builder.field2;
     }
 
-    // 3. GETTERS
     public TYPE1 getField1() { return field1; }
     public TYPE2 getField2() { return field2; }
 
-    // 4. BUILDER
     public static class Builder {
         private TYPE1 field1;
         private TYPE2 field2;
 
-        // 5. SETTERS
         public Builder setField1(TYPE1 field1) {
             this.field1 = field1;
             return this;
@@ -122,7 +102,6 @@ public class CLASSNAME {
             return this;
         }
 
-        // 6. BUILD
         public CLASSNAME build() { return new CLASSNAME(this); }
     }
 }
@@ -131,27 +110,22 @@ public class CLASSNAME {
 
 @Embeddable
 public class KEYCLASS implements java.io.Serializable {
-    // 1. FIELDS
     private TYPE1 field1;
     private TYPE2 field2;
 
-    // 2. CONSTRUCTORS
     protected KEYCLASS() {}
     private KEYCLASS(Builder builder) {
         this.field1 = builder.field1;
         this.field2 = builder.field2;
     }
 
-    // 3. GETTERS
     public TYPE1 getField1() { return field1; }
     public TYPE2 getField2() { return field2; }
 
-    // 4. BUILDER
     public static class Builder {
         private TYPE1 field1;
         private TYPE2 field2;
 
-        // 5. SETTERS
         public Builder setField1(TYPE1 field1) {
             this.field1 = field1;
             return this;
@@ -161,7 +135,6 @@ public class KEYCLASS implements java.io.Serializable {
             return this;
         }
 
-        // 6. BUILD
         public KEYCLASS build() { return new KEYCLASS(this); }
     }
 
@@ -184,7 +157,6 @@ public class KEYCLASS implements java.io.Serializable {
 
 @Entity
 public class OWNER {
-    // 1. ID AND HAS-A FIELDS
     @Id
     private ID_TYPE id;
     @Embedded
@@ -281,21 +253,15 @@ public class Helper {
     }
 }
 
-THOUGHT FLOW:
-Validation rule → static boolean method → true/false → Factory calls Helper
-→ Factory decides reject or build. VALID_CONDITION must become a real boolean expression.
 
 08. FACTORY — NORMAL OR INHERITED ENTITY
 
 public class ENTITYFactory {
-    // 1. FACTORY METHOD
     public static ENTITY createENTITY(TYPE1 field1, TYPE2 field2, TYPE3 field3) {
-        // 2. VALIDATION
         if (INVALID_CONDITION) {
             return null;
         }
 
-        // 3. BUILDER
         return new ENTITY.Builder()
                 .setField1(field1)
                 .setField2(field2)
@@ -307,15 +273,11 @@ public class ENTITYFactory {
 09. FACTORY — COMPOSITION
 
 public class OWNERFactory {
-    // 1. PARAMETERS
-    public static OWNER createOWNER(VALUEOBJECT valueObject,
-                                    java.util.List<RELATED> relatedObjects) {
-        // 2. VALIDATION
+    public static OWNER createOWNER(VALUEOBJECT valueObject, java.util.List<RELATED> relatedObjects) {
         if (valueObject == null || relatedObjects == null) {
             return null;
         }
 
-        // 3. BUILDER
         return new OWNER.Builder()
                 .setValueObject(valueObject)
                 .setRelatedObjects(relatedObjects)
